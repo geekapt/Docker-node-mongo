@@ -1,0 +1,49 @@
+version: '3'
+services:
+  my-app:
+    #image: ${docker-registry}/my-app:1.0
+    image: my-app:1.0
+    ports:
+      - 3000:3000
+    environment:
+      - MONGO_URL=mongodb://admin:password@mongodb:27017
+    networks:
+      #- default
+      - mongo-network
+    volumes:
+      - ./app/:/home/app # Mount local app directory to container
+      - /home/app/node_modules # To avoid overwriting node_modules in container
+  mongodb:
+    image: mongo
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      #- default
+      - mongo-network
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8080:8081
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+    networks:
+      #- default
+      - mongo-network
+volumes:
+  mongo-data:
+      driver: local
+#  mongo-data:
+#    external: true
+
+networks:
+  #default:
+  mongo-network:
+    driver: bridge
